@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente Virtual</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #chatContainer {
+            background: #fff;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #chatBox {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            height: 400px;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .bot {
+            background: #e1f0ff;
+            align-self: flex-start;
+        }
+        .user {
+            background: #d1ffd1;
+            align-self: flex-end;
+        }
+        #userInput {
+            display: flex;
+            border-top: 1px solid #ccc;
+        }
+        #inputField {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            font-size: 16px;
+        }
+        #sendBtn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #sendBtn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="chatContainer">
+        <div id="chatBox"></div>
+        <div id="userInput">
+            <input type="text" id="inputField" placeholder="Escribí tu mensaje...">
+            <button id="sendBtn">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        // Árbol de conversación simplificado
+        const chatTree = {
+            "Inicio": {
+                mensaje: "¡Hola! Bienvenido al soporte. ¿Cómo podemos ayudarte hoy?\nOpciones: 1) Problemas con el sistema 2) Consultas sobre servicios 3) Promociones 4) Hablar con un agente humano",
+            },
+            "Problemas_sistema": { mensaje: "Vamos a intentar solucionar el problema con el sistema. ¿Se carga la página correctamente?" },
+            "Consultas_servicios": { mensaje: "¿Qué consulta deseas realizar? 1) Realizar búsqueda 2) Procesar pago 3) Servicios disponibles por rubro" },
+            "Promociones": { mensaje: "Selecciona el tipo de promoción que deseas consultar: 1) Promociones vigentes 2) Cómo participar en promociones" },
+            "Agente_humano": { mensaje: "Te voy a derivar a un operador. Por favor, espera un momento." },
+            "Fin": { mensaje: "Por favor, califica tu experiencia del 1 al 5, donde 1 es muy insatisfecho y 5 muy satisfecho." }
+        };
+
+        // Sinónimos para reconocer palabras
+        const sinonimos = {
+            "Problemas_sistema": ["sistema", "problema", "error", "fallo", "issue"],
+            "Consultas_servicios": ["servicio", "pago", "abonar", "consulta"],
+            "Promociones": ["promoción", "oferta", "premio", "sorteo"],
+            "Agente_humano": ["agente", "operador", "humano", "persona"]
+        };
+
+        let nodoActual = "Inicio";
+
+        const chatBox = document.getElementById("chatBox");
+        const inputField = document.getElementById("inputField");
+        const sendBtn = document.getElementById("sendBtn");
+
+        // Mostrar mensaje en el chat
+        function mostrarMensaje(texto, clase = "bot") {
+            const mensajeDiv = document.createElement("div");
+            mensajeDiv.className = `message ${clase}`;
+            mensajeDiv.textContent = texto;
+            chatBox.appendChild(mensajeDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Avanzar al nodo
+        function avanzarNodo(nodo) {
+            nodoActual = nodo;
+            mostrarMensaje(chatTree[nodo].mensaje, "bot");
+        }
+
+        // Procesar mensaje del usuario
+        function procesarMensaje(texto) {
+            mostrarMensaje(texto, "user");
+            texto = texto.toLowerCase();
+            let encontrado = false;
+
+            for (let nodo in sinonimos) {
+                for (let palabra of sinonimos[nodo]) {
+                    if (texto.includes(palabra)) {
+                        avanzarNodo(nodo);
+                        encontrado = true;
+                        break;
+                    }
+                }
+                if (encontrado) break;
+            }
+
+            if (!encontrado) {
+                mostrarMensaje("No entendí tu respuesta. Por favor escribí una palabra clave o número de opción.", "bot");
+            }
+        }
+
+        // Inicializar chat
+        mostrarMensaje(chatTree[nodoActual].mensaje);
+
+        // Enviar al presionar botón o Enter
+        sendBtn.addEventListener("click", () => {
+            if (inputField.value.trim() !== "") {
+                procesarMensaje(inputField.value);
+                inputField.value = "";
+            }
+        });
+
+        inputField.addEventListener("keypress", (e) => {
+            if (e.key === "Enter" && inputField.value.trim() !== "") {
+                procesarMensaje(inputField.value);
+                inputField.value = "";
+            }
+        });
+    </script>
+</body>
+</html>
+
