@@ -33,6 +33,7 @@
             margin: 10px 0;
             padding: 10px;
             border-radius: 8px;
+            white-space: pre-line; /* mantiene saltos de línea */
         }
         .bot {
             background: #e1f0ff;
@@ -74,19 +75,22 @@
     </div>
 
     <script>
-        // Árbol de conversación simplificado
+        // Árbol de conversación completo
         const chatTree = {
             "Inicio": {
-                mensaje: "¡Hola! Bienvenido al soporte. ¿Cómo podemos ayudarte hoy?\nOpciones: 1) Problemas con el sistema 2) Consultas sobre servicios 3) Promociones 4) Hablar con un agente humano",
+                mensaje: "¡Hola! Bienvenido al soporte. ¿Cómo podemos ayudarte hoy?\nOpciones:\n1) Problemas con el sistema\n2) Consultas sobre servicios\n3) Promociones\n4) Hablar con un agente humano",
             },
             "Problemas_sistema": { mensaje: "Vamos a intentar solucionar el problema con el sistema. ¿Se carga la página correctamente?" },
-            "Consultas_servicios": { mensaje: "¿Qué consulta deseas realizar? 1) Realizar búsqueda 2) Procesar pago 3) Servicios disponibles por rubro" },
-            "Promociones": { mensaje: "Selecciona el tipo de promoción que deseas consultar: 1) Promociones vigentes 2) Cómo participar en promociones" },
+            "Consultas_servicios": { mensaje: "¿Qué consulta deseas realizar?\n1) Realizar búsqueda de un servicio\n2) Procesar pago\n3) Servicios disponibles por rubro" },
+            "Promociones": { mensaje: "Selecciona el tipo de promoción que deseas consultar:\n1) Promociones vigentes\n2) Cómo participar en promociones" },
             "Agente_humano": { mensaje: "Te voy a derivar a un operador. Por favor, espera un momento." },
-            "Fin": { mensaje: "Por favor, califica tu experiencia del 1 al 5, donde 1 es muy insatisfecho y 5 muy satisfecho." }
+            "Fin": { 
+                mensaje: "Por favor, califica tu experiencia del 1 al 5, donde 1 es muy insatisfecho y 5 muy satisfecho.",
+                reinicio: true
+            }
         };
 
-        // Sinónimos para reconocer palabras
+        // Sinónimos para cada opción
         const sinonimos = {
             "Problemas_sistema": ["sistema", "problema", "error", "fallo", "issue"],
             "Consultas_servicios": ["servicio", "pago", "abonar", "consulta"],
@@ -115,12 +119,20 @@
             mostrarMensaje(chatTree[nodo].mensaje, "bot");
         }
 
+        // Reiniciar el chat al nodo inicial
+        function reiniciarChat() {
+            nodoActual = "Inicio";
+            chatBox.innerHTML = "";
+            mostrarMensaje(chatTree[nodoActual].mensaje, "bot");
+        }
+
         // Procesar mensaje del usuario
         function procesarMensaje(texto) {
             mostrarMensaje(texto, "user");
             texto = texto.toLowerCase();
             let encontrado = false;
 
+            // Reconocer palabras clave o sinónimos
             for (let nodo in sinonimos) {
                 for (let palabra of sinonimos[nodo]) {
                     if (texto.includes(palabra)) {
@@ -132,15 +144,21 @@
                 if (encontrado) break;
             }
 
+            // Si no se reconoce, mostrar mensaje de error
             if (!encontrado) {
                 mostrarMensaje("No entendí tu respuesta. Por favor escribí una palabra clave o número de opción.", "bot");
             }
+
+            // Si el nodo actual es el final, reiniciar automáticamente después de 2s
+            if (chatTree[nodoActual].reinicio) {
+                setTimeout(reiniciarChat, 2000);
+            }
         }
 
-        // Inicializar chat
+        // Inicializar chat con el nodo Inicio
         mostrarMensaje(chatTree[nodoActual].mensaje);
 
-        // Enviar al presionar botón o Enter
+        // Enviar mensaje al presionar botón o Enter
         sendBtn.addEventListener("click", () => {
             if (inputField.value.trim() !== "") {
                 procesarMensaje(inputField.value);
