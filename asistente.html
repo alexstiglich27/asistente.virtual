@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asistente Virtual</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-        }
+        body { font-family: Arial, sans-serif; }
 
         /* Botón flotante */
         #chatIcon {
@@ -56,39 +53,13 @@
             white-space: pre-line;
         }
 
-        .bot {
-            background: #e1f0ff;
-            align-self: flex-start;
-        }
+        .bot { background: #e1f0ff; align-self: flex-start; }
+        .user { background: #d1ffd1; align-self: flex-end; }
 
-        .user {
-            background: #d1ffd1;
-            align-self: flex-end;
-        }
-
-        #userInput {
-            display: flex;
-            border-top: 1px solid #ccc;
-        }
-
-        #inputField {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            font-size: 16px;
-        }
-
-        #sendBtn {
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        #sendBtn:hover {
-            background: #0056b3;
-        }
+        #userInput { display: flex; border-top: 1px solid #ccc; }
+        #inputField { flex: 1; padding: 10px; border: none; }
+        #sendBtn { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        #sendBtn:hover { background: #0056b3; }
     </style>
 </head>
 <body>
@@ -112,9 +83,18 @@
                 mensaje: "¡Hola! Bienvenido al soporte. ¿Cómo podemos ayudarte hoy?",
                 opciones: ["1) Problemas con el sistema", "2) Consultas sobre servicios", "3) Promociones", "4) Hablar con un agente humano"]
             },
-            "Problemas_sistema": { mensaje: "Vamos a intentar solucionar el problema con el sistema. ¿Se carga la página correctamente?" },
-            "Consultas_servicios": { mensaje: "¿Qué consulta deseas realizar?\n1) Realizar búsqueda de un servicio\n2) Procesar pago\n3) Servicios disponibles por rubro" },
-            "Promociones": { mensaje: "Selecciona el tipo de promoción que deseas consultar:\n1) Promociones vigentes\n2) Cómo participar en promociones" },
+            "Problemas_sistema": {
+                mensaje: "Vamos a intentar solucionar el problema con el sistema. ¿Se carga la página correctamente?",
+                opciones: ["1) Sí", "2) No"]
+            },
+            "Consultas_servicios": {
+                mensaje: "¿Qué consulta deseas realizar?",
+                opciones: ["1) Realizar búsqueda de un servicio", "2) Procesar pago", "3) Servicios disponibles por rubro"]
+            },
+            "Promociones": {
+                mensaje: "Selecciona el tipo de promoción que deseas consultar:",
+                opciones: ["1) Promociones vigentes", "2) Cómo participar en promociones"]
+            },
             "Agente_humano": { mensaje: "Te voy a derivar a un operador. Por favor, espera un momento." },
             "Fin": { 
                 mensaje: "Por favor, califica tu experiencia del 1 al 5, donde 1 es muy insatisfecho y 5 muy satisfecho.",
@@ -122,12 +102,12 @@
             }
         };
 
-        // Sinónimos
+        // Sinónimos para reconocimiento de palabras
         const sinonimos = {
-            "Problemas_sistema": ["sistema", "problema", "error", "fallo", "issue"],
-            "Consultas_servicios": ["servicio", "pago", "abonar", "consulta"],
-            "Promociones": ["promoción", "oferta", "premio", "sorteo"],
-            "Agente_humano": ["agente", "operador", "humano", "persona"]
+            "Problemas_sistema": ["sistema", "problema", "error", "fallo", "issue", "1"],
+            "Consultas_servicios": ["servicio", "pago", "abonar", "consulta", "2"],
+            "Promociones": ["promoción", "oferta", "premio", "sorteo", "3"],
+            "Agente_humano": ["agente", "operador", "humano", "persona", "4"]
         };
 
         let nodoActual = "Inicio";
@@ -138,7 +118,7 @@
         const chatIcon = document.getElementById("chatIcon");
         const chatContainer = document.getElementById("chatContainer");
 
-        // Mostrar mensaje
+        // Mostrar mensaje en el chat
         function mostrarMensaje(texto, clase="bot") {
             const mensajeDiv = document.createElement("div");
             mensajeDiv.className = `message ${clase}`;
@@ -147,7 +127,7 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Mostrar opciones numeradas
+        // Mostrar opciones ordenadas
         function mostrarOpciones(opciones) {
             opciones.forEach(opcion => mostrarMensaje(opcion, "bot"));
         }
@@ -156,12 +136,10 @@
         function avanzarNodo(nodo) {
             nodoActual = nodo;
             mostrarMensaje(chatTree[nodo].mensaje, "bot");
-            if(chatTree[nodo].opciones) {
-                mostrarOpciones(chatTree[nodo].opciones);
-            }
+            if(chatTree[nodo].opciones) mostrarOpciones(chatTree[nodo].opciones);
         }
 
-        // Reiniciar chat
+        // Reiniciar chat automáticamente
         function reiniciarChat() {
             nodoActual = "Inicio";
             chatBox.innerHTML = "";
@@ -190,7 +168,6 @@
                 mostrarMensaje("No entendí tu respuesta. Por favor escribí una palabra clave o número de opción.", "bot");
             }
 
-            // Reiniciar si es nodo final
             if(chatTree[nodoActual].reinicio) {
                 setTimeout(reiniciarChat, 2000);
             }
@@ -215,12 +192,12 @@
             }
         });
 
-        // Mostrar/ocultar chat al presionar icono
+        // Abrir/ocultar chat con icono
         chatIcon.addEventListener("click", () => {
-            chatContainer.style.display = chatContainer.style.display === "none" ? "flex" : "none";
+            chatContainer.style.display = chatContainer.style.display === "flex" ? "none" : "flex";
         });
-
     </script>
+
 </body>
 </html>
 
