@@ -8,51 +8,76 @@
         body {
             font-family: Arial, sans-serif;
             background: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
         }
+
+        /* Botón flotante */
+        #chatIcon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            background: #007bff;
+            color: white;
+            font-size: 30px;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        /* Contenedor del chat */
         #chatContainer {
-            background: #fff;
-            width: 90%;
-            max-width: 500px;
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            max-height: 500px;
+            background: white;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            display: flex;
             flex-direction: column;
             overflow: hidden;
+            z-index: 999;
+            display: flex;
         }
+
         #chatBox {
             flex: 1;
-            padding: 20px;
+            padding: 15px;
             overflow-y: auto;
-            height: 400px;
         }
+
         .message {
             margin: 10px 0;
             padding: 10px;
             border-radius: 8px;
-            white-space: pre-line; /* mantiene saltos de línea */
+            white-space: pre-line;
         }
+
         .bot {
             background: #e1f0ff;
             align-self: flex-start;
         }
+
         .user {
             background: #d1ffd1;
             align-self: flex-end;
         }
+
         #userInput {
             display: flex;
             border-top: 1px solid #ccc;
         }
+
         #inputField {
             flex: 1;
             padding: 10px;
             border: none;
             font-size: 16px;
         }
+
         #sendBtn {
             padding: 10px 20px;
             background: #007bff;
@@ -60,12 +85,18 @@
             border: none;
             cursor: pointer;
         }
+
         #sendBtn:hover {
             background: #0056b3;
         }
     </style>
 </head>
 <body>
+
+    <!-- Botón flotante -->
+    <button id="chatIcon">💬</button>
+
+    <!-- Contenedor del chat -->
     <div id="chatContainer">
         <div id="chatBox"></div>
         <div id="userInput">
@@ -75,10 +106,11 @@
     </div>
 
     <script>
-        // Árbol de conversación completo
+        // Árbol de conversación
         const chatTree = {
             "Inicio": {
-                mensaje: "¡Hola! Bienvenido al soporte. ¿Cómo podemos ayudarte hoy?\nOpciones:\n1) Problemas con el sistema\n2) Consultas sobre servicios\n3) Promociones\n4) Hablar con un agente humano",
+                mensaje: "¡Hola! Bienvenido al soporte. ¿Cómo podemos ayudarte hoy?",
+                opciones: ["1) Problemas con el sistema", "2) Consultas sobre servicios", "3) Promociones", "4) Hablar con un agente humano"]
             },
             "Problemas_sistema": { mensaje: "Vamos a intentar solucionar el problema con el sistema. ¿Se carga la página correctamente?" },
             "Consultas_servicios": { mensaje: "¿Qué consulta deseas realizar?\n1) Realizar búsqueda de un servicio\n2) Procesar pago\n3) Servicios disponibles por rubro" },
@@ -90,7 +122,7 @@
             }
         };
 
-        // Sinónimos para cada opción
+        // Sinónimos
         const sinonimos = {
             "Problemas_sistema": ["sistema", "problema", "error", "fallo", "issue"],
             "Consultas_servicios": ["servicio", "pago", "abonar", "consulta"],
@@ -103,9 +135,11 @@
         const chatBox = document.getElementById("chatBox");
         const inputField = document.getElementById("inputField");
         const sendBtn = document.getElementById("sendBtn");
+        const chatIcon = document.getElementById("chatIcon");
+        const chatContainer = document.getElementById("chatContainer");
 
-        // Mostrar mensaje en el chat
-        function mostrarMensaje(texto, clase = "bot") {
+        // Mostrar mensaje
+        function mostrarMensaje(texto, clase="bot") {
             const mensajeDiv = document.createElement("div");
             mensajeDiv.className = `message ${clase}`;
             mensajeDiv.textContent = texto;
@@ -113,17 +147,26 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
+        // Mostrar opciones numeradas
+        function mostrarOpciones(opciones) {
+            opciones.forEach(opcion => mostrarMensaje(opcion, "bot"));
+        }
+
         // Avanzar al nodo
         function avanzarNodo(nodo) {
             nodoActual = nodo;
             mostrarMensaje(chatTree[nodo].mensaje, "bot");
+            if(chatTree[nodo].opciones) {
+                mostrarOpciones(chatTree[nodo].opciones);
+            }
         }
 
-        // Reiniciar el chat al nodo inicial
+        // Reiniciar chat
         function reiniciarChat() {
             nodoActual = "Inicio";
             chatBox.innerHTML = "";
             mostrarMensaje(chatTree[nodoActual].mensaje, "bot");
+            mostrarOpciones(chatTree[nodoActual].opciones);
         }
 
         // Procesar mensaje del usuario
@@ -132,7 +175,6 @@
             texto = texto.toLowerCase();
             let encontrado = false;
 
-            // Reconocer palabras clave o sinónimos
             for (let nodo in sinonimos) {
                 for (let palabra of sinonimos[nodo]) {
                     if (texto.includes(palabra)) {
@@ -144,34 +186,40 @@
                 if (encontrado) break;
             }
 
-            // Si no se reconoce, mostrar mensaje de error
             if (!encontrado) {
                 mostrarMensaje("No entendí tu respuesta. Por favor escribí una palabra clave o número de opción.", "bot");
             }
 
-            // Si el nodo actual es el final, reiniciar automáticamente después de 2s
-            if (chatTree[nodoActual].reinicio) {
+            // Reiniciar si es nodo final
+            if(chatTree[nodoActual].reinicio) {
                 setTimeout(reiniciarChat, 2000);
             }
         }
 
-        // Inicializar chat con el nodo Inicio
+        // Inicializar chat
         mostrarMensaje(chatTree[nodoActual].mensaje);
+        mostrarOpciones(chatTree[nodoActual].opciones);
 
-        // Enviar mensaje al presionar botón o Enter
+        // Enviar mensaje
         sendBtn.addEventListener("click", () => {
-            if (inputField.value.trim() !== "") {
+            if(inputField.value.trim() !== "") {
                 procesarMensaje(inputField.value);
                 inputField.value = "";
             }
         });
 
         inputField.addEventListener("keypress", (e) => {
-            if (e.key === "Enter" && inputField.value.trim() !== "") {
+            if(e.key === "Enter" && inputField.value.trim() !== "") {
                 procesarMensaje(inputField.value);
                 inputField.value = "";
             }
         });
+
+        // Mostrar/ocultar chat al presionar icono
+        chatIcon.addEventListener("click", () => {
+            chatContainer.style.display = chatContainer.style.display === "none" ? "flex" : "none";
+        });
+
     </script>
 </body>
 </html>
